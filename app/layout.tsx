@@ -33,7 +33,7 @@ export default function RootLayout({
       <SidebarProvider>
         <AppSidebar />
           <main>
-            <SidebarTrigger />
+            <SidebarTrigger className="m-[9.5px] absolute" />
             {children}
           </main>
         </SidebarProvider>
