@@ -73,7 +73,7 @@ const initialProjects = [
   },
 ]
 
-export default function SuiviPage() {
+export default function TrackingPage() {
   const [projects, setProjects] = useState(initialProjects)
   const [expandedRows, setExpandedRows] = useState<number[]>([])
   const [selectedProject, setSelectedProject] = useState<typeof initialProjects[0] | null>(null)
@@ -98,7 +98,7 @@ export default function SuiviPage() {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6">Project Follow-up</h1>
+      <h1 className="text-3xl font-bold mb-6">Project Tracking</h1>
       
       <Table>
         <TableHeader>

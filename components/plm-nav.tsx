@@ -13,7 +13,7 @@ const navItems = [
   { name: "Trends", href: "/trends", icon: TrendingUp },
   { name: "Projects", href: "/projects", icon: FolderKanban },
   { name: "Creation", href: "/creation", icon: Beaker },
-  { name: "Suivi", href: "/suivi", icon: Beaker },
+  { name: "Tracking", href: "/tracking", icon: Beaker },
   { name: "Database", href: "/database", icon: FileText },
 ]
 

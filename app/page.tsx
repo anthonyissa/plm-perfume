@@ -70,7 +70,7 @@ export default function Dashboard() {
                   Création
                 </Button>
               </Link>
-              <Link href="/suivi" passHref>
+              <Link href="/tracking" passHref>
                 <Button className="w-full justify-start">
                   <BarChart className="mr-2 h-4 w-4" />
                   Suivi
