@@ -4,61 +4,16 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Plus, Edit, Trash2 } from 'lucide-react'
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
-
-// This would typically come from an API or database
-const initialTrends = [
-  {
-    id: 1,
-    name: "Ocean Breeze",
-    description: "Fresh marine notes with citrus undertones",
-    keywords: ["ocean", "citrus", "fresh"],
-    type: "Fresh",
-    popularity: 85,
-    seasonality: ["Spring", "Summer"]
-  },
-  {
-    id: 2,
-    name: "Enchanted Forest",
-    description: "Woody scent with floral touches",
-    keywords: ["wood", "floral", "moss"],
-    type: "Woody",
-    popularity: 72,
-    seasonality: ["Autumn", "Winter"]
-  },
-  {
-    id: 3,
-    name: "Sweet Gourmand",
-    description: "Vanilla and sweet notes",
-    keywords: ["vanilla", "sweet", "gourmand"],
-    type: "Oriental",
-    popularity: 68,
-    seasonality: ["Autumn", "Winter"]
-  }
-]
+import { useTrendsStore } from '@/hooks/use-trends-store'
 
 export default function TrendsPage() {
-  const [trends, setTrends] = useState(initialTrends)
+  const { trends, addTrend, updateTrend, deleteTrend } = useTrendsStore()
   const [newTrend, setNewTrend] = useState({
     name: '',
     description: '',
@@ -73,15 +28,21 @@ export default function TrendsPage() {
   }
 
   const handleAddTrend = () => {
-    const trendToAdd = {
-      ...newTrend,
-      id: trends.length + 1,
+    addTrend({
+      name: newTrend.name,
+      description: newTrend.description,
       keywords: newTrend.keywords.split(',').map(k => k.trim()),
+      type: newTrend.type,
       seasonality: newTrend.seasonality.split(',').map(s => s.trim()),
       popularity: Math.floor(Math.random() * 100)
-    }
-    setTrends([...trends, trendToAdd])
+    })
     setNewTrend({ name: '', description: '', keywords: '', type: '', seasonality: '' })
+  }
+
+  const handleDelete = (id: number) => {
+    if (window.confirm('Are you sure you want to delete this trend?')) {
+      deleteTrend(id)
+    }
   }
 
   return (
@@ -174,8 +135,19 @@ export default function TrendsPage() {
         {trends.map((trend) => (
           <Card key={trend.id}>
             <CardHeader>
-              <CardTitle>{trend.name}</CardTitle>
-              <CardDescription>{trend.description}</CardDescription>
+              <div className="flex justify-between items-start">
+                <div>
+                  <CardTitle>{trend.name}</CardTitle>
+                  <CardDescription>{trend.description}</CardDescription>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  onClick={() => handleDelete(trend.id)}
+                >
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="mb-2">
