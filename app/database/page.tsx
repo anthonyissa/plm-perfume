@@ -27,40 +27,34 @@ import { Textarea } from "@/components/ui/textarea"
 import { BottleVisualizer } from '@/components/3d-visualizer'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { useIngredientsStore } from '@/hooks/use-ingredients-store'
-
-const initialSuppliers = [
-  { id: 1, name: "Supplier A", contact: "contact@suppliera.com", ingredients: ["Rose Essential Oil"] },
-  { id: 2, name: "Supplier B", contact: "contact@supplierb.com", ingredients: ["Vanilla Extract"] },
-  { id: 3, name: "Supplier C", contact: "contact@supplierc.com", ingredients: ["Bergamot"] },
-]
-
-const initialPerfumes = [
-  { 
-    id: 1, 
-    name: "Spring Blossom", 
-    ingredients: ["Rose Essential Oil", "Bergamot"], 
-    notes: "Floral with citrus undertones" 
-  },
-  { 
-    id: 2, 
-    name: "Ocean Breeze", 
-    ingredients: ["Bergamot", "Vanilla Extract"], 
-    notes: "Fresh marine scent" 
-  },
-  { 
-    id: 3, 
-    name: "Midnight Mystery", 
-    ingredients: ["Vanilla Extract", "Rose Essential Oil"], 
-    notes: "Deep and mysterious" 
-  },
-]
+import { useSuppliersStore } from '@/hooks/use-suppliers-store'
 
 export default function DatabasePage() {
   const { ingredients, addIngredient, updateIngredient, deleteIngredient } = useIngredientsStore()
-  const [suppliers, setSuppliers] = useState(initialSuppliers)
-  const [perfumes, setPerfumes] = useState(initialPerfumes)
+  const { suppliers, addSupplier, updateSupplier, deleteSupplier } = useSuppliersStore()
+  const [perfumes, setPerfumes] = useState<Array<{
+    id: number;
+    name: string;
+    ingredients: string[];
+    notes: string;
+    modelUrl?: string;
+  }>>([])
   const [searchTerm, setSearchTerm] = useState("")
-  const [newItem, setNewItem] = useState({ name: '', type: '', supplier: '', contact: '', ingredients: '', notes: '' })
+  const [newItem, setNewItem] = useState({ 
+    name: '', 
+    type: '', 
+    supplier: '', 
+    contact: '', 
+    ingredients: '', 
+    notes: '',
+    pricePerGram: '',
+    chemicalFormula: '',
+    density: '',
+    tags: '',
+    category: '',
+    origin: '',
+    stockLevel: ''
+  })
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -89,13 +83,17 @@ export default function DatabasePage() {
         })
         break
       case 'supplier':
-        setSuppliers([...suppliers, { id: suppliers.length + 1, name: newItem.name, contact: newItem.contact, ingredients: [] }])
+        addSupplier({
+          name: newItem.name,
+          contact: newItem.contact,
+          ingredients: []
+        })
         break
       case 'perfume':
         setPerfumes([...perfumes, { id: perfumes.length + 1, name: newItem.name, ingredients: newItem.ingredients.split(',').map(i => i.trim()), notes: newItem.notes }])
         break
     }
-    setNewItem({ name: '', type: '', supplier: '', contact: '', ingredients: '', notes: '' })
+    setNewItem({ name: '', type: '', supplier: '', contact: '', ingredients: '', notes: '', pricePerGram: '', chemicalFormula: '', density: '', tags: '', category: '', origin: '', stockLevel: '' })
   }
 
   const filteredIngredients = ingredients.filter(ing => 
@@ -218,7 +216,8 @@ export default function DatabasePage() {
                 <TableHead>Price/g (€)</TableHead>
                 <TableHead>Chemical Formula</TableHead>
                 <TableHead>Density (g/mL)</TableHead>
-                <TableHead>Actions</TableHead>
+                <TableHead>Supplier Website</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -231,18 +230,18 @@ export default function DatabasePage() {
                   <TableCell>{ingredient.chemicalFormula}</TableCell>
                   <TableCell>{ingredient.density}</TableCell>
                   <TableCell>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
-                        <Link className="mr-2 h-4 w-4" /> Supplier Website
-                      </Button>
-                      <Button 
-                        variant="destructive" 
-                        size="sm" 
-                        onClick={() => deleteIngredient(ingredient.id)}
-                      >
-                        <Trash2/>
-                      </Button>
-                    </div>
+                    <Button variant="outline" size="sm">
+                      <Link className="mr-2 h-4 w-4" /> Supplier Website
+                    </Button>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button 
+                      variant="destructive" 
+                      size="sm" 
+                      onClick={() => deleteIngredient(ingredient.id)}
+                    >
+                      <Trash2/>
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -284,7 +283,8 @@ export default function DatabasePage() {
                 <TableHead>Name</TableHead>
                 <TableHead>Contact</TableHead>
                 <TableHead>Ingredients</TableHead>
-                <TableHead>Actions</TableHead>
+                <TableHead>Supplier Website</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -296,6 +296,15 @@ export default function DatabasePage() {
                   <TableCell>
                     <Button variant="outline" size="sm">
                       <Link className="mr-2 h-4 w-4" /> Supplier Website
+                    </Button>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button 
+                      variant="destructive" 
+                      size="sm" 
+                      onClick={() => deleteSupplier(supplier.id)}
+                    >
+                      <Trash2/>
                     </Button>
                   </TableCell>
                 </TableRow>
