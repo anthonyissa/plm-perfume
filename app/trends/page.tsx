@@ -1,19 +1,72 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
-import { Plus, Edit, Trash2 } from 'lucide-react'
+import { Plus, Search, Filter } from 'lucide-react'
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
-import { useTrendsStore } from '@/hooks/use-trends-store'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+
+// This would typically come from an API or database
+const initialTrends = [
+  {
+    id: 1,
+    name: "Ocean Breeze",
+    description: "Fresh marine notes with citrus undertones",
+    keywords: ["ocean", "citrus", "fresh"],
+    type: "Fresh",
+    popularity: 85,
+    seasonality: ["Spring", "Summer"]
+  },
+  {
+    id: 2,
+    name: "Enchanted Forest",
+    description: "Woody scent with floral touches",
+    keywords: ["wood", "floral", "moss"],
+    type: "Woody",
+    popularity: 72,
+    seasonality: ["Autumn", "Winter"]
+  },
+  {
+    id: 3,
+    name: "Sweet Gourmand",
+    description: "Vanilla and sweet notes",
+    keywords: ["vanilla", "sweet", "gourmand"],
+    type: "Oriental",
+    popularity: 68,
+    seasonality: ["Autumn", "Winter"]
+  }
+]
 
 export default function TrendsPage() {
-  const { trends, addTrend, updateTrend, deleteTrend } = useTrendsStore()
+  const [trends, setTrends] = useState(initialTrends)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [filterType, setFilterType] = useState("All")
   const [newTrend, setNewTrend] = useState({
     name: '',
     description: '',
@@ -28,22 +81,21 @@ export default function TrendsPage() {
   }
 
   const handleAddTrend = () => {
-    addTrend({
-      name: newTrend.name,
-      description: newTrend.description,
+    const trendToAdd = {
+      ...newTrend,
+      id: trends.length + 1,
       keywords: newTrend.keywords.split(',').map(k => k.trim()),
-      type: newTrend.type,
       seasonality: newTrend.seasonality.split(',').map(s => s.trim()),
       popularity: Math.floor(Math.random() * 100)
-    })
+    }
+    setTrends([...trends, trendToAdd])
     setNewTrend({ name: '', description: '', keywords: '', type: '', seasonality: '' })
   }
 
-  const handleDelete = (id: number) => {
-    if (window.confirm('Are you sure you want to delete this trend?')) {
-      deleteTrend(id)
-    }
-  }
+  const filteredTrends = trends.filter(trend => 
+    trend.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+    (filterType === "All" || trend.type === filterType)
+  )
 
   return (
     <div className="container mx-auto p-4">
@@ -131,23 +183,44 @@ export default function TrendsPage() {
         </Dialog>
       </div>
       
+      <div className="flex justify-between items-center mb-6">
+        <div className="w-1/3">
+          <Label htmlFor="search" className="sr-only">Search Trends</Label>
+          <div className="relative">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              id="search"
+              placeholder="Search trends..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-8"
+            />
+          </div>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Filter className="h-4 w-4 text-muted-foreground" />
+          <Select value={filterType} onValueChange={setFilterType}>
+            <SelectTrigger className="w
+-[180px]">
+              <SelectValue placeholder="Filter by type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All">All Types</SelectItem>
+              <SelectItem value="Fresh">Fresh</SelectItem>
+              <SelectItem value="Woody">Woody</SelectItem>
+              <SelectItem value="Oriental">Oriental</SelectItem>
+              <SelectItem value="Floral">Floral</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {trends.map((trend) => (
+        {filteredTrends.map((trend) => (
           <Card key={trend.id}>
             <CardHeader>
-              <div className="flex justify-between items-start">
-                <div>
-                  <CardTitle>{trend.name}</CardTitle>
-                  <CardDescription>{trend.description}</CardDescription>
-                </div>
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  onClick={() => handleDelete(trend.id)}
-                >
-                  <Trash2 className="h-4 w-4 text-destructive" />
-                </Button>
-              </div>
+              <CardTitle>{trend.name}</CardTitle>
+              <CardDescription>{trend.description}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="mb-2">
@@ -179,14 +252,10 @@ export default function TrendsPage() {
                 </div>
               </div>
             </CardContent>
-            <CardFooter className="flex justify-between">
+            <CardFooter>
               <Button variant="outline" size="sm">
-                <Edit className="mr-2 h-4 w-4" />
-                Edit
+                Create Fragrance
               </Button>
-              <Link href={`/creation?trend=${trend.id}`} passHref>
-                <Button size="sm">Create Fragrance</Button>
-              </Link>
             </CardFooter>
           </Card>
         ))}

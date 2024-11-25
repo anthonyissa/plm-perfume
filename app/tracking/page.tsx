@@ -32,6 +32,8 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { BottleVisualizer } from '@/components/3d-visualizer'
 
 // This would typically come from an API or database
 const initialProjects = [
@@ -45,7 +47,8 @@ const initialProjects = [
     notes: "Adjusting top notes for better first impression",
     team: ["John Doe", "Jane Smith"],
     nextMilestone: "Stability Testing",
-    nextMilestoneDate: "2023-07-01"
+    nextMilestoneDate: "2023-07-01",
+    modelUrl: "/models/spring-blossom.glb"
   },
   { 
     id: 2, 
@@ -57,7 +60,8 @@ const initialProjects = [
     notes: "Finalizing packaging design",
     team: ["Alice Johnson", "Bob Williams"],
     nextMilestone: "Market Launch",
-    nextMilestoneDate: "2023-08-15"
+    nextMilestoneDate: "2023-08-15",
+    modelUrl: "/models/ocean-breeze.glb"
   },
   { 
     id: 3, 
@@ -69,14 +73,17 @@ const initialProjects = [
     notes: "Exploring unique base note combinations",
     team: ["Emma Brown", "Michael Davis"],
     nextMilestone: "First Sample Review",
-    nextMilestoneDate: "2023-07-10"
+    nextMilestoneDate: "2023-07-10",
+    modelUrl: "/models/midnight-mystery.glb"
   },
 ]
 
-export default function TrackingPage() {
+export default function SuiviPage() {
   const [projects, setProjects] = useState(initialProjects)
   const [expandedRows, setExpandedRows] = useState<number[]>([])
   const [selectedProject, setSelectedProject] = useState<typeof initialProjects[0] | null>(null)
+  const [filter, setFilter] = useState("")
+  const [sortBy, setSortBy] = useState("name")
 
   const toggleRowExpansion = (id: number) => {
     setExpandedRows(prev => 
@@ -84,9 +91,9 @@ export default function TrackingPage() {
     )
   }
 
-  const handleStatusChange = (id: number, newStatus: string) => {
+  const handleStatusChange = (id: number, field: string, value: string | string[]) => {
     setProjects(prev => prev.map(project => 
-      project.id === id ? { ...project, status: newStatus } : project
+      project.id === id ? { ...project, [field]: value } : project
     ))
   }
 
@@ -96,10 +103,44 @@ export default function TrackingPage() {
     ))
   }
 
+  const handleCommentUpdate = (id: number, newComment: string) => {
+    setProjects(prev => prev.map(project => 
+      project.id === id ? { ...project, comments: newComment } : project
+    ))
+  }
+
+  const filteredAndSortedProjects = projects
+  .filter(project => project.name.toLowerCase().includes(filter.toLowerCase()))
+  .sort((a, b) => {
+    if (sortBy === "name") return a.name.localeCompare(b.name)
+    if (sortBy === "status") return a.status.localeCompare(b.status)
+    if (sortBy === "progress") return b.progress - a.progress
+    return 0
+  })
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-3xl font-bold mb-6">Project Tracking</h1>
       
+      <div className="mb-4 flex items-center space-x-4">
+        <Input
+          placeholder="Filter projects..."
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          className="max-w-sm"
+        />
+        <Select value={sortBy} onValueChange={setSortBy}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Sort by" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="name">Name</SelectItem>
+            <SelectItem value="status">Status</SelectItem>
+            <SelectItem value="progress">Progress</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       <Table>
         <TableHeader>
           <TableRow>
@@ -113,7 +154,7 @@ export default function TrackingPage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {projects.map((project) => (
+          {filteredAndSortedProjects.map((project) => (
             <>
               <TableRow key={project.id}>
                 <TableCell>
@@ -154,14 +195,26 @@ export default function TrackingPage() {
                         View Details
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => handleStatusChange(project.id, "In Development")}>
+                      <DropdownMenuItem onClick={() => handleStatusChange(project.id, "status", "In Development")}>
                         Set to In Development
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleStatusChange(project.id, "In Production")}>
+                      <DropdownMenuItem onClick={() => handleStatusChange(project.id, "status", "In Production")}>
                         Set to In Production
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleStatusChange(project.id, "Completed")}>
+                      <DropdownMenuItem onClick={() => handleStatusChange(project.id, "status", "Completed")}>
                         Set to Completed
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => {
+                        const newDeadline = prompt("Enter new deadline (YYYY-MM-DD):", project.nextMilestoneDate)
+                        if (newDeadline) handleStatusChange(project.id, "nextMilestoneDate", newDeadline)
+                      }}>
+                        Update Deadline
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => {
+                        const newTeam = prompt("Enter team members (comma-separated):", project.team.join(", "))
+                        if (newTeam) handleStatusChange(project.id, "team", newTeam.split(",").map(m => m.trim()))
+                      }}>
+                        Update Team
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -184,6 +237,22 @@ export default function TrackingPage() {
                           className="mt-1"
                         />
                       </div>
+                      <div className="mt-2">
+                        <Label htmlFor={`comments-${project.id}`}>Comments</Label>
+                        <Textarea
+                          id={`comments-${project.id}`}
+                          value={project.comments || ""}
+                          onChange={(e) => handleCommentUpdate(project.id, e.target.value)}
+                          className="mt-1"
+                          placeholder="Add a comment..."
+                        />
+                      </div>
+                      {project.status === "In Production" && (
+                        <div className="mt-4">
+                          <h4 className="font-semibold mb-2">Bottle 3D Model</h4>
+                          <BottleVisualizer modelUrl={project.modelUrl} />
+                        </div>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>

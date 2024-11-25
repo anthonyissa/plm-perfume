@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Beaker, Save, ChevronDown } from 'lucide-react'
+import { Beaker, Save } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/accordion"
 import { Slider } from "@/components/ui/slider"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { BottlePreview } from '@/components/bottle-preview'
 
 // This would typically come from an API or database
 const ingredients = [
@@ -42,7 +43,7 @@ const ingredients = [
 
 export default function CreationPage() {
   const searchParams = useSearchParams()
-  const trendId = searchParams.get('trend')
+  const [trendId, setTrendId] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -50,6 +51,14 @@ export default function CreationPage() {
     target: '',
     ingredients: [] as { id: string; percentage: number }[],
   })
+
+  useEffect(() => {
+    const trend = searchParams?.get('trend')
+    if (trend) {
+      setTrendId(trend)
+      // Here you would typically fetch trend data based on the ID and update the form
+    }
+  }, [searchParams])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -203,6 +212,11 @@ export default function CreationPage() {
           </div>
         </div>
       </form>
+
+      <div className="mt-8">
+        <h2 className="text-2xl font-semibold mb-4">Bottle Preview</h2>
+        <BottlePreview />
+      </div>
     </div>
   )
 }
