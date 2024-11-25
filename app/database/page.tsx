@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Upload, Download, Link, Box} from 'lucide-react'
+import { Plus, Upload, Download, Link, Box, Trash2} from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -231,9 +231,18 @@ export default function DatabasePage() {
                   <TableCell>{ingredient.chemicalFormula}</TableCell>
                   <TableCell>{ingredient.density}</TableCell>
                   <TableCell>
-                    <Button variant="outline" size="sm">
-                      <Link className="mr-2 h-4 w-4" /> Supplier Website
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm">
+                        <Link className="mr-2 h-4 w-4" /> Supplier Website
+                      </Button>
+                      <Button 
+                        variant="destructive" 
+                        size="sm" 
+                        onClick={() => deleteIngredient(ingredient.id)}
+                      >
+                        <Trash2/>
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -300,7 +309,7 @@ export default function DatabasePage() {
             <h2 className="text-2xl font-semibold">Perfumes</h2>
             <Dialog>
               <DialogTrigger asChild>
-                <Button><Plus className="mr-2 h-4 w-4" /> Add Perfume</Button>
+              
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
