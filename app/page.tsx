@@ -29,16 +29,6 @@ export default function Dashboard() {
 
   return (
     <div className="container mx-auto p-4">
-      <nav className="flex justify-between items-center mb-6 pb-2 border-b">
-        <h1 className="text-3xl font-bold">Perfume PLM Dashboard</h1>
-        <div className="flex space-x-4">
-          <Link href="/"><Button variant="ghost">Dashboard</Button></Link>
-          <Link href="/trends"><Button variant="ghost">Trends</Button></Link>
-          <Link href="/creation"><Button variant="ghost">Creation</Button></Link>
-          <Link href="/tracking"><Button variant="ghost">Tracking</Button></Link>
-          <Link href="/database"><Button variant="ghost">Database</Button></Link>
-        </div>
-      </nav>
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
         <Card>
