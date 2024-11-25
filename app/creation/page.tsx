@@ -11,6 +11,7 @@ import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Beaker, Target, Clock, Droplet } from 'lucide-react'
+import { useIngredientsStore } from '@/hooks/use-ingredients-store'
 
 interface FormulationStep {
   name: string
@@ -28,9 +29,9 @@ interface ProductFormData {
   marketTarget: string
   inspiration: string
   olfactiveFamily: string
-  topNotes: string[]
-  heartNotes: string[]
-  baseNotes: string[]
+  topNotes: SelectedNote[]
+  heartNotes: SelectedNote[]
+  baseNotes: SelectedNote[]
   sustainabilityScore: number
   estimatedCost: number
   estimatedTime: number
@@ -52,6 +53,23 @@ interface ProductFormData {
   }
 }
 
+interface Ingredient {
+  name: string
+  category: 'top' | 'heart' | 'base'
+  description: string
+  intensity: number
+  concentration: number
+  price: number
+  stockLevel: number
+  family: string
+}
+
+interface SelectedNote {
+  name: string
+  concentration: number
+  intensity: number
+}
+
 const OLFACTIVE_FAMILIES = [
   "Floral",
   "Oriental",
@@ -67,6 +85,7 @@ const generateReference = () => `PE_${Math.random().toString(36).substring(2, 8)
 export default function CreationPage() {
   const [step, setStep] = useState(1)
   const [reference, setReference] = useState('')
+  const { ingredients } = useIngredientsStore()
 
   useEffect(() => {
     setReference(generateReference())
@@ -192,7 +211,7 @@ export default function CreationPage() {
         return (
           <div className="space-y-4">
             <h2 className="text-xl font-semibold">3. Olfactive Design</h2>
-            <div className="grid gap-4">
+            <div className="grid gap-6">
               <div>
                 <Label>Olfactive Family</Label>
                 <Select 
@@ -209,30 +228,97 @@ export default function CreationPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div>
-                <Label>Top Notes (comma separated)</Label>
-                <Input 
-                  value={formData.topNotes.join(', ')}
-                  onChange={(e) => updateFormData('topNotes', e.target.value.split(',').map(s => s.trim()))}
-                  placeholder="e.g., Bergamot, Lemon, Orange"
-                />
-              </div>
-              <div>
-                <Label>Heart Notes (comma separated)</Label>
-                <Input 
-                  value={formData.heartNotes.join(', ')}
-                  onChange={(e) => updateFormData('heartNotes', e.target.value.split(',').map(s => s.trim()))}
-                  placeholder="e.g., Rose, Jasmine, Lavender"
-                />
-              </div>
-              <div>
-                <Label>Base Notes (comma separated)</Label>
-                <Input 
-                  value={formData.baseNotes.join(', ')}
-                  onChange={(e) => updateFormData('baseNotes', e.target.value.split(',').map(s => s.trim()))}
-                  placeholder="e.g., Vanilla, Musk, Amber"
-                />
-              </div>
+
+              {[
+                { type: 'Top', label: 'Top Notes', field: 'topNotes' },
+                { type: 'Heart', label: 'Heart Notes', field: 'heartNotes' },
+                { type: 'Base', label: 'Base Notes', field: 'baseNotes' }
+              ].map(section => (
+                <div key={section.type} className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <Label>{section.label}</Label>
+                    <Badge variant="secondary">
+                      Selected: {formData[section.field].length}
+                    </Badge>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="border rounded-lg p-4">
+                      <h4 className="font-medium mb-2">Available Ingredients</h4>
+                      <div className="space-y-2 max-h-48 overflow-y-auto">
+                        {ingredients
+                          .filter(i => i.category === section.type)
+                          .map(ingredient => (
+                            <Button
+                              key={ingredient.id}
+                              variant="outline"
+                              className="w-full justify-between group relative"
+                              onClick={() => {
+                                const newNote: SelectedNote = {
+                                  name: ingredient.name,
+                                  concentration: 5,
+                                  intensity: 5
+                                }
+                                if (!formData[section.field].find(n => n.name === ingredient.name)) {
+                                  updateFormData(section.field, [...formData[section.field], newNote])
+                                }
+                              }}
+                            >
+                              <div className="flex items-center gap-2">
+                                <span>{ingredient.name}</span>
+                                <Badge variant="outline">{ingredient.type}</Badge>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Badge variant="secondary">
+                                  {ingredient.pricePerGram}€/g
+                                </Badge>
+                              </div>
+                              <div className="absolute invisible group-hover:visible bg-black/75 text-white p-2 rounded text-sm -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap z-50">
+                                Stock: {ingredient.stockLevel}g | Origin: {ingredient.origin}
+                              </div>
+                            </Button>
+                          ))}
+                      </div>
+                    </div>
+                    <div className="border rounded-lg p-4">
+                      <h4 className="font-medium mb-2">Selected Notes</h4>
+                      <div className="space-y-2">
+                        {formData[section.field].map((note, index) => (
+                          <div key={note.name} className="flex items-center gap-2">
+                            <Input
+                              type="number"
+                              min={1}
+                              max={100}
+                              value={note.concentration}
+                              onChange={(e) => {
+                                const newNotes = [...formData[section.field]]
+                                newNotes[index] = {
+                                  ...note,
+                                  concentration: Number(e.target.value)
+                                }
+                                updateFormData(section.field, newNotes)
+                              }}
+                              className="w-20"
+                            />
+                            <span className="flex-grow">{note.name}</span>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                updateFormData(
+                                  section.field,
+                                  formData[section.field].filter((_, i) => i !== index)
+                                )
+                              }}
+                            >
+                              ×
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )
