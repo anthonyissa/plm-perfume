@@ -1,8 +1,15 @@
 'use client'
 
-import { useState } from 'react'
-import { MoreHorizontal, ChevronDown, ChevronUp } from 'lucide-react'
+import { BottleVisualizer } from '@/components/3d-visualizer'
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,6 +18,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Progress } from "@/components/ui/progress"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Table,
   TableBody,
@@ -19,21 +30,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Progress } from "@/components/ui/progress"
-import { Badge } from "@/components/ui/badge"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { BottleVisualizer } from '@/components/3d-visualizer'
+import { ChevronDown, ChevronUp, MoreHorizontal } from 'lucide-react'
+import { useState } from 'react'
 
 // This would typically come from an API or database
 const initialProjects = [
@@ -48,7 +47,9 @@ const initialProjects = [
     team: ["John Doe", "Jane Smith"],
     nextMilestone: "Stability Testing",
     nextMilestoneDate: "2023-07-01",
-    modelUrl: "/models/spring-blossom.glb"
+    modelUrl: "/models/ocean-breeze.glb",
+    comments: 'Update (17/12/2024): Awaiting lab result for temperature tests'
+
   },
   { 
     id: 2, 
@@ -61,7 +62,8 @@ const initialProjects = [
     team: ["Alice Johnson", "Bob Williams"],
     nextMilestone: "Market Launch",
     nextMilestoneDate: "2023-08-15",
-    modelUrl: "/models/ocean-breeze.glb"
+    modelUrl: "/models/ocean-breeze.glb",
+    comments: 'Update (17/12/2024): Supply issue for vanilla extract'
   },
   { 
     id: 3, 
@@ -74,7 +76,8 @@ const initialProjects = [
     team: ["Emma Brown", "Michael Davis"],
     nextMilestone: "First Sample Review",
     nextMilestoneDate: "2023-07-10",
-    modelUrl: "/models/midnight-mystery.glb"
+    modelUrl: "/models/ocean-breeze.glb",
+    comments: 'Update (17/12/2024): Second iteration for the bottle design'
   },
 ]
 
@@ -229,7 +232,7 @@ export default function SuiviPage() {
                       <p><strong>Current Stage:</strong> {project.stage}</p>
                       <p><strong>Next Milestone Date:</strong> {project.nextMilestoneDate}</p>
                       <div className="mt-2">
-                        <Label htmlFor={`notes-${project.id}`}>Notes</Label>
+                        <Label htmlFor={`notes-${project.id}`}>Current state</Label>
                         <Textarea
                           id={`notes-${project.id}`}
                           value={project.notes}
@@ -238,7 +241,7 @@ export default function SuiviPage() {
                         />
                       </div>
                       <div className="mt-2">
-                        <Label htmlFor={`comments-${project.id}`}>Comments</Label>
+                        <Label htmlFor={`comments-${project.id}`}>Latest Operations</Label>
                         <Textarea
                           id={`comments-${project.id}`}
                           value={project.comments || ""}

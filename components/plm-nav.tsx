@@ -23,10 +23,6 @@ export function PLMNav() {
   return (
     <div className="border-b bg-white">
       <div className="flex h-16 items-center px-4 justify-between max-w-[1400px] mx-auto">
-        <Button>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          New Creation
-        </Button>
         <nav className="flex items-center space-x-4">
           {navItems.map((item) => (
             <Link

@@ -1,17 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
-import { Beaker, Target, Clock, Droplet, TestTube, FlaskConical, ShieldCheck, Settings, Scale } from 'lucide-react'
+import { Textarea } from "@/components/ui/textarea"
 import { useIngredientsStore } from '@/hooks/use-ingredients-store'
+import { Beaker, Droplet, FlaskConical, Scale, Settings, ShieldCheck, Target, TestTube } from 'lucide-react'
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from 'react'
 
 interface FormulationStep {
   name: string
@@ -85,7 +84,7 @@ interface LabDevelopment {
   temperature: number
   humidity: number
   mixingTime: number
-  observations: string[]
+  observations: string
   pH: number
   viscosity: number
 }
@@ -104,21 +103,15 @@ interface StabilityTest {
 }
 
 interface SafetyAssessment {
-  allergenList: string[]
+  allergenList: string
   ifraCompliance: boolean
-  skinIrritationTest: string
-  photosensitivityTest: string
-  preservativeSystem: string
   stabilityPeriod: number
 }
 
 interface ProductionSpecs {
   batchSize: number
-  equipmentRequirements: string[]
-  mixingInstructions: string[]
-  qualityControlPoints: string[]
-  packagingRequirements: string[]
-  storageConditions: string
+  equipmentRequirements: string
+  mixingInstructions: string
 }
 
 const OLFACTIVE_FAMILIES = [
@@ -137,6 +130,7 @@ export default function CreationPage() {
   const [step, setStep] = useState(1)
   const [reference, setReference] = useState('')
   const { ingredients } = useIngredientsStore()
+  const router = useRouter()
 
   useEffect(() => {
     setReference(generateReference())
@@ -176,26 +170,20 @@ export default function CreationPage() {
       temperature: 0,
       humidity: 0,
       mixingTime: 0,
-      observations: [],
+      observations: '',
       pH: 0,
       viscosity: 0
     },
     stabilityTests: [],
     safetyAssessment: {
-      allergenList: [],
+      allergenList: '',
       ifraCompliance: false,
-      skinIrritationTest: '',
-      photosensitivityTest: '',
-      preservativeSystem: '',
       stabilityPeriod: 0
     },
     productionSpecs: {
       batchSize: 0,
-      equipmentRequirements: [],
-      mixingInstructions: [],
-      qualityControlPoints: [],
-      packagingRequirements: [],
-      storageConditions: ''
+      equipmentRequirements: '',
+      mixingInstructions: '',
     },
     regulatoryDocuments: {
       msds: false,
@@ -465,7 +453,7 @@ export default function CreationPage() {
               <div>
                 <Label>Observations</Label>
                 <Textarea 
-                  value={formData.labDevelopment.observations.join('\n')}
+                  value={formData.labDevelopment.observations}
                   onChange={(e) => updateFormData('labDevelopment', {
                     ...formData.labDevelopment,
                     observations: e.target.value.split('\n')
@@ -542,10 +530,10 @@ export default function CreationPage() {
               <div>
                 <Label>Allergen List</Label>
                 <Textarea 
-                  value={formData.safetyAssessment.allergenList.join('\n')}
+                  value={formData.safetyAssessment.allergenList}
                   onChange={(e) => updateFormData('safetyAssessment', {
                     ...formData.safetyAssessment,
-                    allergenList: e.target.value.split('\n')
+                    allergenList: e.target.value
                   })}
                   placeholder="Enter each allergen on a new line"
                 />
@@ -596,10 +584,10 @@ export default function CreationPage() {
               <div>
                 <Label>Equipment Requirements</Label>
                 <Textarea 
-                  value={formData.productionSpecs.equipmentRequirements.join('\n')}
+                  value={formData.productionSpecs.equipmentRequirements}
                   onChange={(e) => updateFormData('productionSpecs', {
                     ...formData.productionSpecs,
-                    equipmentRequirements: e.target.value.split('\n')
+                    equipmentRequirements: e.target.value
                   })}
                   placeholder="Enter each equipment requirement on a new line"
                 />
@@ -607,10 +595,10 @@ export default function CreationPage() {
               <div>
                 <Label>Mixing Instructions</Label>
                 <Textarea 
-                  value={formData.productionSpecs.mixingInstructions.join('\n')}
+                  value={formData.productionSpecs.mixingInstructions}
                   onChange={(e) => updateFormData('productionSpecs', {
                     ...formData.productionSpecs,
-                    mixingInstructions: e.target.value.split('\n')
+                    mixingInstructions: e.target.value
                   })}
                   placeholder="Enter each instruction on a new line"
                 />
@@ -647,14 +635,6 @@ export default function CreationPage() {
                   />
                 </div>
               </div>
-              <div>
-                <Label>Regulations</Label>
-                <Textarea 
-                  value={formData.regulations.join('\n')}
-                  onChange={(e) => updateFormData('regulations', e.target.value.split('\n'))}
-                  placeholder="Enter each regulation on a new line"
-                />
-              </div>
             </div>
           </div>
         )
@@ -664,8 +644,7 @@ export default function CreationPage() {
   }
 
   const handleSubmit = () => {
-    // Ici, on enverrait les données au backend
-    console.log(formData)
+    router.push('/');
   }
 
   const validateStep = (stepId: number, data: ProductFormData) => {
@@ -687,38 +666,24 @@ export default function CreationPage() {
         return !!data.labDevelopment.batchNumber && 
                !!data.labDevelopment.temperature && 
                !!data.labDevelopment.humidity && 
-               !!data.labDevelopment.mixingTime && 
                !!data.labDevelopment.observations.length && 
-               !!data.labDevelopment.pH && 
-               !!data.labDevelopment.viscosity
+               !!data.labDevelopment.pH
       case 5: // Stability Tests
         return data.stabilityTests.length > 0 && 
                data.stabilityTests.every(test => 
                  test.duration > 0 && 
-                 test.temperature > 0 && 
-                 test.results.color && 
-                 test.results.odor && 
-                 test.results.separation && 
-                 test.results.pH > 0
+                 test.temperature > 0
                )
       case 6: // Safety Assessment
         return data.safetyAssessment.allergenList.length > 0 && 
-               data.safetyAssessment.skinIrritationTest && 
-               data.safetyAssessment.photosensitivityTest && 
-               data.safetyAssessment.preservativeSystem && 
                data.safetyAssessment.stabilityPeriod > 0
       case 7: // Production Specs
         return data.productionSpecs.batchSize > 0 && 
                data.productionSpecs.equipmentRequirements.length > 0 && 
-               data.productionSpecs.mixingInstructions.length > 0 && 
-               data.productionSpecs.qualityControlPoints.length > 0 && 
-               data.productionSpecs.packagingRequirements.length > 0 && 
-               data.productionSpecs.storageConditions
+               data.productionSpecs.mixingInstructions.length > 0
       case 8: // Regulatory Review
         return data.regulatoryDocuments.msds && 
-               data.regulatoryDocuments.ifraConformity && 
-               data.regulatoryDocuments.allergenDeclaration && 
-               data.regulatoryDocuments.safetyAssessmentReport
+               data.regulatoryDocuments.ifraConformity 
       default:
         return false
     }
